@@ -2,6 +2,8 @@
 
 The Ghost API is designed to generate structured test responses dynamically. It supports various data types such as strings, numbers, dates, arrays, and objects. This documentation provides an overview of endpoints, supported data types, and response formats.
 
+> Note: This is a work in progress. Please feel free to contribute.
+
 # Ghost API Documentation
 
 create a `.ghostrc` file in the root of your project.
