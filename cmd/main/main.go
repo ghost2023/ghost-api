@@ -4,35 +4,39 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"ghost-api/cmd/main/config"
-	"ghost-api/cmd/main/response"
-
-	// "ghost-api/cmd/main/response"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
+
+	"ghost-api/cmd/main/config"
+	"ghost-api/cmd/main/response"
 
 	"gopkg.in/yaml.v3"
 )
 
 var conf = config.Config{
 	Port:    "7500",
-	Latency: 100,
-	Jitter:  10,
+	Latency: 250,
+	Jitter:  50,
 	Timeout: 1000,
 }
 
 type Router struct{}
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("Request received:", req.URL.Path)
+	fmt.Print("\nRequest received:", req.URL.Path)
 	for i, endpoint := range conf.Endpoints {
 		if req.URL.Path == endpoint.Url {
-
-			fmt.Println("Endpoint found:", conf.Endpoints[i].Name)
+			delay := rand.Intn(endpoint.Jitter*2) - endpoint.Jitter
+			time.Sleep(time.Duration(delay+endpoint.Latency) * time.Millisecond)
+			fmt.Println(",", delay+endpoint.Latency, "ms")
 			w.WriteHeader(conf.Endpoints[i].Response.StatusCode)
 			res := response.GenerateResponse(&endpoint.Response.Data)
 			json.NewEncoder(w).Encode(res)
+
+			return
 		}
 	}
 }

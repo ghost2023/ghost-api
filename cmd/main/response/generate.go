@@ -83,7 +83,6 @@ func GenerateNumber(node *config.Node) (float64, error) {
 }
 
 func GenerateString(node *config.Node) (string, error) {
-
 	if node.Metadata == "" {
 		var randLen int
 		if node.Range == nil {
