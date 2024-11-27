@@ -11,9 +11,8 @@ alternatively, you can pass the config file path as a flag `-c <path>`
 
 ```yaml
 port: 8080 # Port to listen on
-latency: 100 # Default latency in milliseconds
-jitter: 10 # Default jitter in milliseconds
-timeout: 1000 # Default timeout in milliseconds
+latency: 150 # Default latency in milliseconds(optional)
+jitter: 50 # Default jitter in milliseconds(optional) (the range is [-jitter, +jitter])
 endpoints: # Array of endpoints
   - name: "GetUser" # Name of the endpoint
     url: "/api/events" # URL of the endpoint
