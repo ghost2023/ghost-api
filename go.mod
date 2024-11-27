@@ -1,4 +1,4 @@
-module ghost-backend
+module ghost-api
 
 go 1.23.3
 
