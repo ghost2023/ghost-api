@@ -83,9 +83,15 @@ func GenerateNumber(node *config.Node) (float64, error) {
 }
 
 func GenerateString(node *config.Node) (string, error) {
-	randLen := parseRange(node.Range, false)
 
 	if node.Metadata == "" {
+		var randLen int
+		if node.Range == nil {
+			randLen = randIntBetween(4, 16)
+		} else {
+			randLen = parseRange(node.Range, false)
+		}
+
 		finalString := ""
 		averageLength := 6
 		wordLength := float32(randLen) / float32(averageLength)
