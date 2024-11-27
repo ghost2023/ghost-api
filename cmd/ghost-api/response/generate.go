@@ -1,7 +1,7 @@
 package response
 
 import (
-	"ghost-api/cmd/main/config"
+	"ghost-api/cmd/ghost-api/config"
 	"log"
 	"math/rand"
 	"reflect"

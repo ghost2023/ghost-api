@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"ghost-api/cmd/ghost-api/config"
+	"ghost-api/cmd/ghost-api/response"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
 	"time"
-
-	"ghost-api/cmd/main/config"
-	"ghost-api/cmd/main/response"
 
 	"gopkg.in/yaml.v3"
 )
