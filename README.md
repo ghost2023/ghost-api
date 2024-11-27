@@ -7,53 +7,84 @@ The Ghost API is designed to generate structured test responses dynamically. It 
 create a `.ghostrc` file in the root of your project.
 alternatively, you can pass the config file path as a flag `-c <path>`
 
-**Config Option:**
+**Config Example:**
 
 ```yaml
-schemas:
-  string:
-    type: string
-    value: ~ # fixed value (optional)
-    metadata: ~ # Specifies type (e.g., name, first_name, email); defaults to lorem ipsum
-    range: [5, 20] # Length range [min, max](optional)
-
-  number:
-    type: number
-    value: ~ # fixed value (optional)
-    metadata: ~ # Specifies type (e.g., age, latitude); defaults to random value
-    range: [1, 100] # Value range [min, max]
-
-  date:
-    type: date
-    value: ~ # Default value (optional)
-    range: [-30d, 30m] # Range in days from the present [min_offset, max_offset]
-    format: "2006-01-02" # Date format (Go-style)
-
-  array:
-    type: array
-    range: [1, 5] # Number of items [min, max]
-    items: # Schema of array elements
-      type: string
-      metadata: email
-
-  object:
-    type: object
-    value: ~ # Default object (optional)
-    fields: # Key-value schemas
-      title:
-        type: string
-        range: [5, 50]
-      age:
-        type: numeric
-        range: [18, 65]
-      created_at:
-        type: date
-        format: "2006-01-02"
+port: 8080 # Port to listen on
+latency: 100 # Default latency in milliseconds
+jitter: 10 # Default jitter in milliseconds
+timeout: 1000 # Default timeout in milliseconds
+endpoints: # Array of endpoints
+  - name: "GetUser" # Name of the endpoint
+    url: "/api/events" # URL of the endpoint
+    response:
+      status_code: 200
+      data_type: "application/json"
+      data:
+        type: array
+        range: [6, 20]
+        items:
+          type: object
+          fields:
+            id:
+              type: number
+              range: [1, 100]
+            name:
+              type: string
+              metadata: name
+              range: [6, 100]
+            imgUrl:
+              type: string
+              value: "https://picsum.photos/200/300"
+            date:
+              type: date
+              range: ["3d", "60d"]
 ```
 
-#### Response
+## Types of Data
 
-**Body Example:**
+```yaml
+string:
+  type: string
+  value: ~ # fixed value (optional)
+  metadata: ~ # Specifies type (e.g., name, first_name, email); defaults to lorem ipsum
+  range: [5, 20] # Length range [min, max](optional)
+
+number:
+  type: number
+  value: ~ # fixed value (optional)
+  metadata: ~ # Specifies type (e.g., age, latitude); defaults to random value
+  range: [1, 100] # Value range [min, max]
+
+date:
+  type: date
+  value: ~ # Default value (optional)
+  range: [-30d, 30m] # Range in days from the present [min_offset, max_offset]
+  format: "2006-01-02" # Date format (Go-style)
+
+array:
+  type: array
+  range: [1, 5] # Number of items [min, max]
+  items: # Schema of array elements
+    type: string
+    metadata: email
+
+object:
+  type: object
+  value: ~ # Default object (optional)
+  fields: # Key-value schemas
+    title:
+      type: string
+      range: [5, 50]
+    age:
+      type: numeric
+      range: [18, 65]
+    created_at:
+      type: date
+      format: "2006-01-02"
+```
+
+**Response Example:**
 
 ```json
 {
