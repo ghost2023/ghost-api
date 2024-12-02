@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"ghost-api/cmd/ghost-api/config"
-	"ghost-api/cmd/ghost-api/response"
+	"github.com/ghost2023/ghost-api/cmd/ghost-api/config"
+	"github.com/ghost2023/ghost-api/cmd/ghost-api/response"
 	"log"
 	"math/rand"
 	"net/http"
@@ -25,16 +25,22 @@ var conf = config.Config{
 type Router struct{}
 
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	fmt.Print("\nRequest received:", req.URL.Path)
 	for i, endpoint := range conf.Endpoints {
 		if req.URL.Path == endpoint.Url {
 			delay := rand.Intn(endpoint.Jitter*2) - endpoint.Jitter
 			time.Sleep(time.Duration(delay+endpoint.Latency) * time.Millisecond)
+
+			fmt.Print("\nRequest received:", req.URL.Path)
 			fmt.Println(",", delay+endpoint.Latency, "ms")
+
 			w.WriteHeader(conf.Endpoints[i].Response.StatusCode)
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+
 			res := response.GenerateResponse(&endpoint.Response.Data)
 			json.NewEncoder(w).Encode(res)
-
 			return
 		}
 	}
