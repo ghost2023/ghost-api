@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"time"
 
@@ -102,9 +103,9 @@ func GenerateString(node *config.Node) (string, error) {
 				return "", e
 			}
 
-			finalString += word.(string)
+			finalString += " " + word.(string)
 		}
-		return finalString, nil
+		return strings.TrimSpace(finalString), nil
 	} else {
 		s := getRandString(node.Metadata)
 		return s, nil
