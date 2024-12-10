@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"github.com/ghost2023/ghost-api/cmd/ghost-api/config"
 	"github.com/ghost2023/ghost-api/cmd/ghost-api/response"
 	"log"
@@ -24,13 +25,15 @@ var conf = config.Config{
 
 type Router struct{}
 
+var configFile *string
+
 func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for i, endpoint := range conf.Endpoints {
 		if req.URL.Path == endpoint.Url {
 			delay := rand.Intn(endpoint.Jitter*2) - endpoint.Jitter
 			time.Sleep(time.Duration(delay+endpoint.Latency) * time.Millisecond)
 
-			fmt.Print("\nRequest received:", req.URL.Path)
+			fmt.Print("Request received:", req.URL.Path)
 			fmt.Println(",", delay+endpoint.Latency, "ms")
 
 			w.WriteHeader(conf.Endpoints[i].Response.StatusCode)
@@ -43,18 +46,75 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			json.NewEncoder(w).Encode(res)
 			return
 		}
+
 	}
+	w.WriteHeader(404)
+	w.Write([]byte("404 Not Found"))
+	return
 }
 
 func main() {
 	router := Router{}
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+
+	go func() {
+		for {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				// If the file was modified, reload the configuration
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					fmt.Println("Config file changed:", event.Name)
+					err := reloadConfig(*configFile)
+					if err != nil {
+						log.Printf("Failed to reload config: %v", err)
+					}
+				}
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Printf("Watcher error: %v", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(*configFile)
+	if err != nil {
+		log.Fatalf("Failed to watch config file: %v", err)
+	}
 
 	fmt.Printf("Starting server on port %s\n", conf.Port)
-	http.ListenAndServe(":"+conf.Port, &router)
+	err = http.ListenAndServe(":"+conf.Port, &router)
+	if err != nil {
+		log.Fatalf("Server failed: %v", err)
+	}
+}
+
+func reloadConfig(configFile string) error {
+	configFileContent, err := os.ReadFile(configFile)
+	if err != nil {
+		return fmt.Errorf("error reading config file: %v", err)
+	}
+
+	err = yaml.Unmarshal(configFileContent, &conf)
+	if err != nil {
+		return fmt.Errorf("error unmarshalling config file: %v", err)
+	}
+
+	// Apply defaults to ensure valid configuration
+	config.ApplyDefaults(&conf)
+	return nil
 }
 
 func init() {
-	configFile := flag.String("c", ".ghostrc", "Config file")
+	configFile = flag.String("c", ".ghostrc", "Config file")
 	flag.Parse()
 
 	configFileContent, err := os.ReadFile(*configFile)
