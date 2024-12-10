@@ -20,7 +20,6 @@ endpoints: # Array of endpoints
     url: "/api/events" # URL of the endpoint
     response:
       status_code: 200
-      data_type: "application/json"
       data:
         type: array
         range: [6, 20]
